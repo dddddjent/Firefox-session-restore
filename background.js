@@ -1,6 +1,9 @@
 browser.runtime.onMessage.addListener(async (message) => {
   if (message.action === "save") {
-    const tabs = await browser.tabs.query({currentWindow: true});
+    // Filter out privileged URLs
+    let allTabs = await browser.tabs.query({currentWindow: true});
+    const tabs = allTabs.filter(tab => tab.url && !tab.url.startsWith("about:") && !tab.url.startsWith("moz-extension:") && !tab.url.startsWith("file:"));
+    
     const tabGroups = await browser.tabGroups.query({windowId: browser.windows.WINDOW_ID_CURRENT});
     await browser.storage.local.set({session: {tabs, tabGroups}});
     console.log("Session saved");
@@ -10,13 +13,25 @@ browser.runtime.onMessage.addListener(async (message) => {
       const session = result.session;
 
       // Create all tabs first
-      const createPromises = session.tabs.map(tab => 
-        browser.tabs.create({
+      const createPromises = session.tabs.map(async tab => {
+        const createOptions = {
           url: tab.url, 
-          active: false, 
-          cookieStoreId: tab.cookieStoreId
-        })
-      );
+          active: false
+        };
+
+        // Only set cookieStoreId if it's valid and not the default
+        if (tab.cookieStoreId && tab.cookieStoreId !== 'firefox-default') {
+          try {
+            // Verify the container exists
+            await browser.contextualIdentities.get(tab.cookieStoreId);
+            createOptions.cookieStoreId = tab.cookieStoreId;
+          } catch (error) {
+            console.warn(`Container ${tab.cookieStoreId} not found, using default`);
+          }
+        }
+
+        return browser.tabs.create(createOptions);
+      });
       const newTabs = await Promise.all(createPromises);
 
       // Group tabs
@@ -37,10 +52,17 @@ browser.runtime.onMessage.addListener(async (message) => {
           const newTabIds = oldGroupIdToNewTabs[oldGroup.id];
           if (newTabIds && newTabIds.length > 0) {
             const newGroup = await browser.tabs.group({ tabIds: newTabIds });
-            await browser.tabGroups.update(newGroup.id, {
-              title: oldGroup.title,
-              color: oldGroup.color
-            });
+            const updateProperties = {};
+            if (oldGroup.title) {
+              updateProperties.title = oldGroup.title;
+            }
+            if (oldGroup.color) {
+              updateProperties.color = oldGroup.color;
+            }
+            if (Object.keys(updateProperties).length > 0) {
+                            console.log(updateProperties);
+                await browser.tabGroups.update(newGroup.id, updateProperties);
+            }
           }
         }
       }
