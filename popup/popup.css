@@ -1,8 +1,54 @@
 body {
-  width: 200px;
+  width: 300px; /* Increased width for more space */
+  font-family: sans-serif;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
 }
 
 button {
-  width: 100%;
-  margin: 5px 0;
+  flex-grow: 1;
+  margin: 5px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+button:hover {
+    background-color: #e0e0e0;
+}
+
+#session-display {
+  margin-top: 10px;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+}
+
+.group {
+    margin-bottom: 10px;
+    border: 1px solid;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.group-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+    font-size: 12px;
+}
+
+.tab img {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
 }
