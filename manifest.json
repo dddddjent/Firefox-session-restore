@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "Session Restore",
+  "version": "1.0",
+  "description": "Saves and restores browser sessions.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "tabGroups"
+  ],
+  "browser_action": {
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  }
+}
