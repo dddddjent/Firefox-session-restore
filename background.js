@@ -5,12 +5,17 @@ browser.runtime.onMessage.addListener(async (message) => {
     const tabs = allTabs.filter(tab => tab.url && !tab.url.startsWith("about:") && !tab.url.startsWith("moz-extension:") && !tab.url.startsWith("file:"));
     
     const tabGroups = await browser.tabGroups.query({windowId: browser.windows.WINDOW_ID_CURRENT});
+    
+    console.log("Saving session:", {tabs, tabGroups}); // Added logging
+
     await browser.storage.local.set({session: {tabs, tabGroups}});
     console.log("Session saved");
+
   } else if (message.action === "restore") {
     const result = await browser.storage.local.get("session");
     if (result.session) {
       const session = result.session;
+      console.log("Restoring session:", session); // Added logging
 
       // Create all tabs first
       const createPromises = session.tabs.map(async tab => {
@@ -52,6 +57,7 @@ browser.runtime.onMessage.addListener(async (message) => {
           const newTabIds = oldGroupIdToNewTabs[oldGroup.id];
           if (newTabIds && newTabIds.length > 0) {
             const newGroup = await browser.tabs.group({ tabIds: newTabIds });
+            console.log("New group", newGroup);
             const updateProperties = {};
             if (oldGroup.title) {
               updateProperties.title = oldGroup.title;
@@ -60,8 +66,7 @@ browser.runtime.onMessage.addListener(async (message) => {
               updateProperties.color = oldGroup.color;
             }
             if (Object.keys(updateProperties).length > 0) {
-                            console.log(updateProperties);
-                await browser.tabGroups.update(newGroup.id, updateProperties);
+                await browser.tabGroups.update(newGroup, updateProperties);
             }
           }
         }
