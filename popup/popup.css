@@ -1,6 +1,8 @@
 body {
-  width: 300px; /* Increased width for more space */
+  width: 300px;
   font-family: sans-serif;
+  background-color: #2b2b2b; /* Dark background */
+  color: #f0f0f0; /* Light text */
 }
 
 .buttons {
@@ -12,27 +14,29 @@ button {
   flex-grow: 1;
   margin: 5px;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #555; /* Darker border */
   border-radius: 3px;
-  background-color: #f0f0f0;
+  background-color: #444; /* Dark button */
+  color: #f0f0f0; /* Light text */
   cursor: pointer;
 }
 
 button:hover {
-    background-color: #e0e0e0;
+    background-color: #555; /* Slightly lighter on hover */
 }
 
 #session-display {
   margin-top: 10px;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #555; /* Darker border */
   padding-top: 10px;
 }
 
 .group {
     margin-bottom: 10px;
-    border: 1px solid;
+    border: 1px solid; /* Border color is set by JS */
     border-radius: 5px;
     padding: 5px;
+    background-color: #333; /* Slightly lighter group background */
 }
 
 .group-title {
