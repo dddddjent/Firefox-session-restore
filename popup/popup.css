@@ -33,7 +33,7 @@ button:hover {
 
 .group {
     margin-bottom: 10px;
-    border: 1px solid; /* Border color is set by JS */
+    border: 2px solid; /* Border color is set by JS */
     border-radius: 5px;
     padding: 5px;
     background-color: #333; /* Slightly lighter group background */
