@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 document.getElementById('save-button').addEventListener('click', () => {
     browser.runtime.sendMessage({action: "save"});
-    window.close(); // Close popup after action
+    window.location.reload(); // Refresh to show the new saved state
 });
 
 document.getElementById('restore-button').addEventListener('click', () => {
