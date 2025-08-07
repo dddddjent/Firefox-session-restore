@@ -6,7 +6,7 @@ browser.runtime.onMessage.addListener(async (message) => {
     
     const tabGroups = await browser.tabGroups.query({windowId: browser.windows.WINDOW_ID_CURRENT});
     
-    console.log("Saving session:", {tabs, tabGroups}); // Added logging
+    console.log("Saving session:", {tabs, tabGroups});
 
     await browser.storage.local.set({session: {tabs, tabGroups}});
     console.log("Session saved");
@@ -15,13 +15,16 @@ browser.runtime.onMessage.addListener(async (message) => {
     const result = await browser.storage.local.get("session");
     if (result.session) {
       const session = result.session;
-      console.log("Restoring session:", session); // Added logging
+      console.log("Restoring session:", session);
 
-      // Create all tabs first
+      // Create all tabs first, but discarded for lazy loading
       const createPromises = session.tabs.map(async tab => {
         const createOptions = {
           url: tab.url, 
-          active: false
+          active: false, // Create them inactive first
+          discarded: true, // Lazy load the tab
+          title: tab.title, // Preserve the title
+          pinned: tab.pinned // Preserve pinned status
         };
 
         // Only set cookieStoreId if it's valid and not the default
@@ -39,7 +42,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       });
       const newTabs = await Promise.all(createPromises);
 
-      // Group tabs
+      // Group tabs using your proven logic
       if (session.tabGroups && session.tabGroups.length > 0) {
         const oldGroupIdToNewTabs = {};
 
@@ -57,7 +60,6 @@ browser.runtime.onMessage.addListener(async (message) => {
           const newTabIds = oldGroupIdToNewTabs[oldGroup.id];
           if (newTabIds && newTabIds.length > 0) {
             const newGroup = await browser.tabs.group({ tabIds: newTabIds });
-            console.log("New group", newGroup);
             const updateProperties = {};
             if (oldGroup.title) {
               updateProperties.title = oldGroup.title;
@@ -66,12 +68,20 @@ browser.runtime.onMessage.addListener(async (message) => {
               updateProperties.color = oldGroup.color;
             }
             if (Object.keys(updateProperties).length > 0) {
+                // Correctly pass the groupId directly, as you said.
                 await browser.tabGroups.update(newGroup, updateProperties);
             }
           }
         }
       }
-      console.log("Session restored");
+
+      // Activate the originally active tab
+      const activeTabIndex = session.tabs.findIndex(tab => tab.active);
+      if (activeTabIndex !== -1) {
+        await browser.tabs.update(newTabs[activeTabIndex].id, { active: true });
+      }
+
+      console.log("Session restored with lazy loading");
     }
   }
 });
