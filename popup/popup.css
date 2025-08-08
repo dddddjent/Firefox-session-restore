@@ -7,12 +7,11 @@ body {
 
 .buttons {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* Stack buttons vertically */
 }
 
 button {
-  flex-grow: 1;
-  margin: 5px;
+  margin: 4px 0; /* Adjust margin for vertical layout */
   padding: 8px;
   border: 1px solid #555; /* Darker border */
   border-radius: 3px;
@@ -23,6 +22,14 @@ button {
 
 button:hover {
     background-color: #555; /* Slightly lighter on hover */
+}
+
+#clear-button {
+    background-color: #6d2828; /* Reddish hue for destructive action */
+}
+
+#clear-button:hover {
+    background-color: #8b3a3a;
 }
 
 #session-display {
