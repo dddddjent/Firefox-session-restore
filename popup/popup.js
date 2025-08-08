@@ -81,3 +81,63 @@ document.getElementById('clear-button').addEventListener('click', async () => {
     document.getElementById('session-display').textContent = 'No session saved.';
     window.location.reload(); // Refresh popup to show cleared state
 });
+
+document.getElementById('export-button').addEventListener('click', async () => {
+    try {
+        const result = await browser.runtime.sendMessage({ action: 'export' });
+        if (!result || result.ok !== true) {
+            if (result && result.reason === 'no-session') {
+                alert('No session saved.');
+                return;
+            }
+            // Fallback: export from popup via Blob + anchor
+            try {
+                const stored = await browser.storage.local.get('session');
+                if (!stored.session) {
+                    alert('No session saved.');
+                    return;
+                }
+                const jsonString = JSON.stringify(stored.session, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `session-${timestamp}.json`;
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = filename;
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } catch (fallbackError) {
+                console.error('Fallback export failed:', fallbackError);
+                alert('Failed to export session.');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to export session:', error);
+        // Last-chance fallback
+        try {
+            const stored = await browser.storage.local.get('session');
+            if (!stored.session) {
+                alert('No session saved.');
+                return;
+            }
+            const jsonString = JSON.stringify(stored.session, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `session-${timestamp}.json`;
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        } catch (finalErr) {
+            console.error('Final fallback export failed:', finalErr);
+            alert('Failed to export session. Check console for details.');
+        }
+    }
+});

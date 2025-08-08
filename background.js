@@ -83,5 +83,31 @@ browser.runtime.onMessage.addListener(async (message) => {
 
       console.log("Session restored with lazy loading");
     }
+  } else if (message.action === "export") {
+    try {
+      const result = await browser.storage.local.get("session");
+      if (!result.session) {
+        return { ok: false, reason: "no-session" };
+      }
+      const session = result.session;
+      const jsonString = JSON.stringify(session, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const objectUrl = URL.createObjectURL(blob);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `session-${timestamp}.json`;
+
+      await browser.downloads.download({
+        url: objectUrl,
+        filename,
+        saveAs: true
+      });
+
+      // Revoke after a small delay to ensure download starts
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+      return { ok: true };
+    } catch (error) {
+      console.error("Failed to export session:", error);
+      return { ok: false, error: String(error) };
+    }
   }
 });
