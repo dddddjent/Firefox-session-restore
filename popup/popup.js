@@ -141,3 +141,8 @@ document.getElementById('export-button').addEventListener('click', async () => {
         }
     }
 });
+
+document.getElementById('import-button').addEventListener('click', () => {
+    browser.tabs.create({url: "import.html"});
+    window.close(); // Close the popup
+});

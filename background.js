@@ -109,5 +109,8 @@ browser.runtime.onMessage.addListener(async (message) => {
       console.error("Failed to export session:", error);
       return { ok: false, error: String(error) };
     }
+  } else if (message.action === "import") {
+    await browser.storage.local.set({session: message.session});
+    console.log("Session imported");
   }
 });
